@@ -5,7 +5,6 @@ import ManualFlow from "./pages/ManualFlow";
 import TemplateSelect from "./pages/TemplateSelect";
 import Generating from "./pages/Generating";
 import Result from "./pages/Result";
-import Form from "./pages/form";
 
 function App() {
   return (
@@ -13,7 +12,6 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/ai" element={<AIFlow />} />
       <Route path="/manual" element={<ManualFlow />} />
-      <Route path="/form" element={<Form />} />
       <Route path="/template-select" element={<TemplateSelect />} />
       <Route path="/generating" element={<Generating />} />
       <Route path="/result" element={<Result />} />
