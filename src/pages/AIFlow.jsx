@@ -8,6 +8,7 @@ import {
   FaLinkedin,
   FaBriefcase,
   FaCamera,
+  FaArrowLeft,
 } from "react-icons/fa";
 
 const AIFlow = () => {
@@ -43,17 +44,19 @@ const AIFlow = () => {
   };
 
   const handleSubmit = () => {
-    // Store in localStorage or context for next steps
+    // Store in localStorage for next steps
     localStorage.setItem("cvFormData", JSON.stringify(formData));
     localStorage.setItem("mode", "AI");
-    navigate("/template-select");
+    navigate("/generating");
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4">
       <div className="max-w-2xl mx-auto">
+        {/* Back Button */}
+
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-3xl mt-10  font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
             AI CV Builder
           </h1>
           <p className="text-sm text-gray-600">
@@ -61,7 +64,7 @@ const AIFlow = () => {
           </p>
         </div>
 
-        <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
+        <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-sm-8 p-5 shadow-xl border border-white/20">
           <div className="space-y-6">
             {/* Profile Image */}
             <div className="text-center">

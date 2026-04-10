@@ -8,6 +8,7 @@ import {
   FaTools,
   FaProjectDiagram,
   FaCamera,
+  FaArrowLeft,
 } from "react-icons/fa";
 
 const ManualFlow = () => {
@@ -36,6 +37,16 @@ const ManualFlow = () => {
       obj[keys[0]] = value;
       return copy;
     });
+  };
+
+  const handleContactChange = (key, value) => {
+    setCv((prev) => ({
+      ...prev,
+      contact: {
+        ...prev.contact,
+        [key]: value,
+      },
+    }));
   };
 
   const handleImage = (e) => {
@@ -69,7 +80,7 @@ const ManualFlow = () => {
   const handleSubmit = () => {
     localStorage.setItem("cvFormData", JSON.stringify(cv));
     localStorage.setItem("mode", "Manual");
-    navigate("/template-select");
+    navigate("/generating");
   };
 
   const sections = [
@@ -85,8 +96,10 @@ const ManualFlow = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4">
       <div className="max-w-6xl mx-auto">
+        {/* Back Button */}
+
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mt-6 mb-4">
             Manual CV Builder
           </h1>
           <p className="text-gray-600">
@@ -94,7 +107,7 @@ const ManualFlow = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-6">
+        <div className="flex flex-col-reverse lg:grid lg:grid-cols-4 gap-6">
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/20 sticky top-4">
@@ -123,7 +136,7 @@ const ManualFlow = () => {
                 onClick={handleSubmit}
                 className="w-full mt-6 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 px-4 rounded-2xl font-semibold hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 flex items-center justify-center gap-2 group"
               >
-                Continue to Templates
+                Generate My CV
                 <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
@@ -131,7 +144,7 @@ const ManualFlow = () => {
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20">
+            <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-sm-8 p-5 shadow-xl border border-white/20">
               {activeSection === "personal" && (
                 <div className="space-y-6">
                   <h2 className="text-2xl font-bold text-gray-800">
@@ -202,7 +215,10 @@ const ManualFlow = () => {
                       type="email"
                       value={cv.contact.email}
                       onChange={(e) =>
-                        handleField("contact.email", e.target.value)
+                        setCv((prev) => ({
+                          ...prev,
+                          contact: { ...prev.contact, email: e.target.value },
+                        }))
                       }
                       placeholder="Email"
                       className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
@@ -211,7 +227,10 @@ const ManualFlow = () => {
                       type="tel"
                       value={cv.contact.phone}
                       onChange={(e) =>
-                        handleField("contact.phone", e.target.value)
+                        setCv((prev) => ({
+                          ...prev,
+                          contact: { ...prev.contact, phone: e.target.value },
+                        }))
                       }
                       placeholder="Phone"
                       className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
@@ -220,19 +239,19 @@ const ManualFlow = () => {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <input
-                      type="url"
+                      type="text"
                       value={cv.contact.linkedin}
                       onChange={(e) =>
-                        handleField("contact.linkedin", e.target.value)
+                        handleContactChange("linkedin", e.target.value)
                       }
                       placeholder="LinkedIn"
                       className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
                     />
                     <input
-                      type="url"
+                      type="text"
                       value={cv.contact.portfolio}
                       onChange={(e) =>
-                        handleField("contact.portfolio", e.target.value)
+                        handleContactChange("portfolio", e.target.value)
                       }
                       placeholder="Portfolio"
                       className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
