@@ -1,13 +1,25 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaDownload, FaEdit, FaHome, FaPrint } from "react-icons/fa";
+import {
+  FaDownload,
+  FaEdit,
+  FaFolderOpen,
+  FaHome,
+  FaPrint,
+  FaSave,
+} from "react-icons/fa";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import AppHeader from "../components/AppHeader";
+import CVDocument from "../components/CVDocument";
+import { cvTemplates, getTemplateById } from "../data/templates";
+import { api, withAuth } from "../lib/api";
+import { getCurrentUser } from "../lib/session";
 
 const Result = () => {
   const navigate = useNavigate();
   const [cvData, setCvData] = useState(null);
-  const [template, setTemplate] = useState("modern");
+  const [template, setTemplate] = useState(cvTemplates[0].id);
   const [isEditMode, setIsEditMode] = useState(false);
   const [visibleSections, setVisibleSections] = useState({
     experience: true,
@@ -16,14 +28,25 @@ const Result = () => {
     awards: true,
     languages: true,
   });
+  const [saveState, setSaveState] = useState({ loading: false, message: "" });
   const cvRef = useRef();
+  const user = getCurrentUser();
 
   useEffect(() => {
     const data = localStorage.getItem("generatedCV");
     const selectedTemplate = localStorage.getItem("selectedTemplate");
     if (data) {
-      setCvData(JSON.parse(data));
-      setTemplate(selectedTemplate || "modern");
+      const parsedData = JSON.parse(data);
+      setCvData(parsedData);
+      setTemplate(
+        parsedData.selectedTemplate || selectedTemplate || cvTemplates[0].id,
+      );
+      if (parsedData.savedCv?.id) {
+        setSaveState({
+          loading: false,
+          message: "This version is already linked to your saved CV library.",
+        });
+      }
     } else {
       navigate("/");
     }
@@ -89,10 +112,52 @@ const Result = () => {
     window.print();
   };
 
+  const handleTemplateChange = (templateId) => {
+    localStorage.setItem("selectedTemplate", templateId);
+    setTemplate(templateId);
+  };
+
+  const saveCurrentCv = async () => {
+    if (!user || !cvData) {
+      navigate("/auth");
+      return;
+    }
+
+    setSaveState({ loading: true, message: "" });
+    try {
+      const { data } = await api.post(
+        "/api/cv/save",
+        {
+          cv: cvData.cv,
+          profileImage,
+          showProfileImage,
+          selectedTemplate: template,
+          label: cvData.cv?.title || `${cvData.cv?.fullName || "Untitled"} CV`,
+        },
+        withAuth(),
+      );
+
+      const updatedPayload = {
+        ...cvData,
+        selectedTemplate: template,
+        savedCv: { id: data.savedCv.id },
+      };
+      setCvData(updatedPayload);
+      localStorage.setItem("generatedCV", JSON.stringify(updatedPayload));
+      setSaveState({ loading: false, message: "Saved to your account." });
+    } catch (error) {
+      setSaveState({
+        loading: false,
+        message:
+          error.response?.data?.error || "Unable to save this CV right now.",
+      });
+    }
+  };
+
   if (!cvData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+      <div className="page-shell flex min-h-screen items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-[var(--app-accent)]"></div>
       </div>
     );
   }
@@ -100,77 +165,142 @@ const Result = () => {
   const cv = cvData.cv;
   const profileImage = cvData.profileImage;
   const showProfileImage = cvData.showProfileImage;
+  const activeTemplate = getTemplateById(template);
+
+  const previewCv = {
+    ...cv,
+    experience: visibleSections.experience ? cv.experience : [],
+    education: visibleSections.education ? cv.education : [],
+    projects: visibleSections.projects ? cv.projects : [],
+    extras: {
+      ...cv.extras,
+      awards: visibleSections.awards ? cv.extras?.awards : [],
+      languages: visibleSections.languages ? cv.extras?.languages : [],
+    },
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 p-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent mb-4">
-            Your CV is Ready!
-          </h1>
-          <p className="text-gray-600">
-            Download, edit, or share your professional CV
-          </p>
+    <div className="page-shell px-4 py-6 md:px-6 md:py-10">
+      <div className="mx-auto max-w-7xl">
+        <AppHeader />
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[var(--app-muted)]">
+              Resume Result
+            </p>
+            <h1 className="mt-2 text-5xl font-semibold leading-none text-[var(--app-ink)] md:text-6xl">
+              Your CV now follows the template you picked.
+            </h1>
+            <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--app-muted)]">
+              Change content, hide sections, or switch to another template style
+              before downloading the PDF.
+            </p>
+          </div>
+          <div className="rounded-full border border-black/10 bg-white/50 px-5 py-3 text-sm text-[var(--app-muted)]">
+            Active template:{" "}
+            <span className="font-semibold text-[var(--app-ink)]">
+              {activeTemplate.name}
+            </span>
+          </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-wrap justify-center gap-3 mb-8">
+        <div className="mb-8 flex flex-wrap gap-3">
           <button
             onClick={downloadPDF}
-            className="bg-gradient-to-r from-green-600 to-emerald-600 text-white py-3 px-6 rounded-2xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-300 flex items-center gap-2"
+            className="brand-button flex items-center gap-2 rounded-2xl px-6 py-3 font-semibold transition-all"
           >
             <FaDownload /> Download PDF
           </button>
           <button
             onClick={printCV}
-            className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-6 rounded-2xl font-semibold hover:from-blue-700 hover:to-cyan-700 transition-all duration-300 flex items-center gap-2"
+            className="secondary-button flex items-center gap-2 rounded-2xl px-6 py-3 font-semibold transition-all"
           >
             <FaPrint /> Print CV
           </button>
           <button
             onClick={() => setIsEditMode(!isEditMode)}
-            className={`py-3 px-6 rounded-2xl font-semibold transition-all duration-300 flex items-center gap-2 ${
+            className={`flex items-center gap-2 rounded-2xl px-6 py-3 font-semibold transition-all ${
               isEditMode
-                ? "bg-gradient-to-r from-orange-600 to-red-600 text-white hover:from-orange-700 hover:to-red-700"
-                : "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600"
+                ? "bg-[var(--app-warm)] text-white"
+                : "secondary-button"
             }`}
           >
             <FaEdit /> {isEditMode ? "Done Editing" : "Edit CV"}
           </button>
           <button
             onClick={() => navigate("/")}
-            className="bg-gradient-to-r from-gray-600 to-gray-700 text-white py-3 px-6 rounded-2xl font-semibold hover:from-gray-700 hover:to-gray-800 transition-all duration-300 flex items-center gap-2"
+            className="secondary-button flex items-center gap-2 rounded-2xl px-6 py-3 font-semibold transition-all"
           >
             <FaHome /> Create New CV
           </button>
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="secondary-button flex items-center gap-2 rounded-2xl px-6 py-3 font-semibold transition-all"
+          >
+            <FaFolderOpen /> My Saved CVs
+          </button>
+          <button
+            onClick={saveCurrentCv}
+            className="brand-button flex items-center gap-2 rounded-2xl px-6 py-3 font-semibold transition-all"
+          >
+            <FaSave />{" "}
+            {saveState.loading
+              ? "Saving..."
+              : user
+                ? "Save to account"
+                : "Login to save"}
+          </button>
         </div>
 
-        {/* Main Layout */}
-        <div className="grid lg:grid-cols-3 gap-8 mb-8">
-          {/* Edit Panel */}
+        {saveState.message && (
+          <div className="mb-8 rounded-[24px] border border-black/10 bg-white/55 px-5 py-4 text-sm text-[var(--app-muted)]">
+            {saveState.message}
+          </div>
+        )}
+
+        <div className="mb-8 rounded-[30px] border border-black/10 bg-white/45 p-4 md:p-5">
+          <div className="flex flex-wrap gap-3">
+            {cvTemplates.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => handleTemplateChange(item.id)}
+                className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                  template === item.id ? "brand-button" : "secondary-button"
+                }`}
+              >
+                {item.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-8 lg:grid-cols-3">
           {isEditMode && (
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-4">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">
+              <div className="surface-panel sticky top-4 rounded-[30px] p-6">
+                <h2 className="text-3xl font-semibold text-[var(--app-ink)]">
                   Edit Sections
                 </h2>
+                <p className="mt-2 text-sm leading-6 text-[var(--app-muted)]">
+                  Hide optional blocks or refine the headline fields before
+                  export.
+                </p>
 
-                <div className="space-y-4">
+                <div className="mt-6 space-y-4">
                   {Object.entries(visibleSections).map(
                     ([section, isVisible]) => (
                       <div
                         key={section}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                        className="flex items-center justify-between rounded-2xl border border-black/8 bg-white/55 p-4 transition-colors"
                       >
                         <label className="flex items-center gap-3 cursor-pointer flex-1">
                           <input
                             type="checkbox"
                             checked={isVisible}
                             onChange={() => toggleSection(section)}
-                            className="w-5 h-5 rounded border-gray-300 text-indigo-600 cursor-pointer"
+                            className="h-5 w-5 cursor-pointer rounded border-gray-300 text-[var(--app-accent)]"
                           />
-                          <span className="font-medium text-gray-700 capitalize">
+                          <span className="font-medium capitalize text-[var(--app-ink)]">
                             {section === "awards"
                               ? "Awards & Achievements"
                               : section.charAt(0).toUpperCase() +
@@ -182,13 +312,13 @@ const Result = () => {
                   )}
                 </div>
 
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <h3 className="font-semibold text-gray-900 mb-4">
+                <div className="mt-6 border-t border-black/8 pt-6">
+                  <h3 className="text-lg font-semibold text-[var(--app-ink)]">
                     Quick Edit
                   </h3>
-                  <div className="space-y-4">
+                  <div className="mt-4 space-y-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-700">
+                      <label className="text-sm font-medium text-[var(--app-muted)]">
                         Full Name
                       </label>
                       <input
@@ -197,11 +327,11 @@ const Result = () => {
                         onChange={(e) =>
                           handleEditField("fullName", e.target.value)
                         }
-                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="mt-1 w-full rounded-2xl border border-black/10 bg-white/70 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-700">
+                      <label className="text-sm font-medium text-[var(--app-muted)]">
                         Job Title
                       </label>
                       <input
@@ -210,11 +340,11 @@ const Result = () => {
                         onChange={(e) =>
                           handleEditField("title", e.target.value)
                         }
-                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="mt-1 w-full rounded-2xl border border-black/10 bg-white/70 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-700">
+                      <label className="text-sm font-medium text-[var(--app-muted)]">
                         Email
                       </label>
                       <input
@@ -223,11 +353,11 @@ const Result = () => {
                         onChange={(e) =>
                           handleEditField("contact.email", e.target.value)
                         }
-                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        className="mt-1 w-full rounded-2xl border border-black/10 bg-white/70 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-700">
+                      <label className="text-sm font-medium text-[var(--app-muted)]">
                         Professional Summary
                       </label>
                       <textarea
@@ -236,7 +366,7 @@ const Result = () => {
                           handleEditField("summary", e.target.value)
                         }
                         rows={4}
-                        className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
+                        className="mt-1 w-full resize-none rounded-2xl border border-black/10 bg-white/70 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                       />
                     </div>
                   </div>
@@ -245,219 +375,19 @@ const Result = () => {
             </div>
           )}
 
-          {/* CV Preview */}
           <div className={isEditMode ? "lg:col-span-2" : "lg:col-span-3"}>
             <div className="flex justify-center">
               <div
                 ref={cvRef}
-                className="w-full max-w-4xl rounded-3xl shadow-2xl border border-gray-200 overflow-hidden print:shadow-none print:border-none bg-white"
+                className="w-full max-w-5xl overflow-hidden rounded-[34px] border border-black/10 shadow-[0_30px_80px_rgba(36,31,26,0.12)] print:shadow-none print:border-none"
                 style={{ aspectRatio: "210/297" }}
               >
-                <div className="h-full grid grid-cols-1 md:grid-cols-2">
-                  {/* Left panel */}
-                  <div className="relative bg-gradient-to-b from-indigo-800 to-indigo-600 text-white p-8">
-                    <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.4)_0%,rgba(255,255,255,0)_60%)]"></div>
-                    <div className="relative z-10 space-y-4">
-                      {showProfileImage && profileImage ? (
-                        <img
-                          src={profileImage}
-                          alt="Profile"
-                          className="w-32 h-32 rounded-full border-4 border-white object-cover mx-auto shadow-lg"
-                        />
-                      ) : (
-                        <div className="w-32 h-32 rounded-full border-4 border-white bg-indigo-700/70 mx-auto flex items-center justify-center text-3xl font-bold">
-                          {(cv.fullName || "?").slice(0, 2).toUpperCase()}
-                        </div>
-                      )}
-                      <div className="text-center space-y-1">
-                        <h1 className="text-3xl font-black tracking-wide uppercase drop-shadow-lg">
-                          {cv.fullName || "Your Name"}
-                        </h1>
-                        <p className="text-lg font-semibold opacity-90">
-                          {cv.title || "Web Developer"}
-                        </p>
-                      </div>
-
-                      <div className="mt-4 border-t border-white/30 pt-4 space-y-2 text-sm">
-                        {cv.contact?.email && <p>✉️ {cv.contact.email}</p>}
-                        {cv.contact?.phone && <p>📞 {cv.contact.phone}</p>}
-                        {cv.contact?.linkedin && (
-                          <p>🔗 {cv.contact.linkedin}</p>
-                        )}
-                        {cv.contact?.portfolio && (
-                          <p>🌐 {cv.contact.portfolio}</p>
-                        )}
-                      </div>
-
-                      <div>
-                        <h3 className="text-lg font-bold mt-4">Skills</h3>
-                        <div className="space-y-2 mt-2">
-                          {[
-                            ...new Set([
-                              ...(cv.skills?.technical || []),
-                              ...(cv.skills?.tools || []),
-                              ...(cv.skills?.soft || []),
-                            ]),
-                          ]
-                            .filter(Boolean)
-                            .slice(0, 7)
-                            .map((skill, idx) => (
-                              <div key={idx} className="space-y-1">
-                                <p className="text-sm font-medium text-white">
-                                  {skill}
-                                </p>
-                                <div className="h-2 bg-white/30 rounded-full">
-                                  <div
-                                    className="h-2 bg-white rounded-full"
-                                    style={{
-                                      width: `${70 + (idx % 5) * 5}%`,
-                                    }}
-                                  ></div>
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-
-                      {visibleSections.languages &&
-                        cv.extras?.languages?.filter(Boolean).length > 0 && (
-                          <div>
-                            <h3 className="text-lg font-bold mt-4">
-                              Languages
-                            </h3>
-                            <div className="space-y-2 mt-2 text-sm">
-                              {cv.extras.languages
-                                .filter(Boolean)
-                                .map((lang, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="flex items-center justify-between"
-                                  >
-                                    <span>{lang}</span>
-                                    <div className="h-2 w-24 bg-white/30 rounded-full">
-                                      <div
-                                        className="h-2 bg-white rounded-full"
-                                        style={{
-                                          width: `${80 - idx * 10}%`,
-                                        }}
-                                      />
-                                    </div>
-                                  </div>
-                                ))}
-                            </div>
-                          </div>
-                        )}
-
-                      {cv.summary && (
-                        <div>
-                          <h3 className="text-lg font-bold mt-4">About</h3>
-                          <p className="text-sm text-white/90 mt-2 leading-relaxed">
-                            {cv.summary}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Right panel */}
-                  <div className="p-8 bg-white text-gray-800 overflow-y-auto">
-                    <div className="space-y-6">
-                      {visibleSections.experience && (
-                        <section>
-                          <h3 className="text-2xl font-bold mb-3">
-                            Professional Experience
-                          </h3>
-                          <div className="space-y-4">
-                            {cv.experience?.filter(Boolean).map((exp, idx) => (
-                              <div key={idx}>
-                                <div className="flex items-center justify-between">
-                                  <h4 className="text-lg font-semibold">
-                                    {exp.role || "Role"} at{" "}
-                                    {exp.company || "Company"}
-                                  </h4>
-                                  <span className="text-sm text-gray-500">
-                                    {exp.duration || "Period"}
-                                  </span>
-                                </div>
-                                <ul className="mt-2 list-disc list-inside space-y-1 text-sm text-gray-700">
-                                  {exp.bullets
-                                    ?.filter(Boolean)
-                                    .map((bullet, bidx) => (
-                                      <li key={bidx}>{bullet}</li>
-                                    ))}
-                                </ul>
-                              </div>
-                            ))}
-                          </div>
-                        </section>
-                      )}
-
-                      {visibleSections.education &&
-                        cv.education?.filter(Boolean).length > 0 && (
-                          <section>
-                            <h3 className="text-2xl font-bold mb-3">
-                              Education
-                            </h3>
-                            <div className="space-y-3">
-                              {cv.education.map((edu, idx) => (
-                                <div key={idx}>
-                                  <h4 className="font-semibold">
-                                    {edu.degree || "Degree"}
-                                  </h4>
-                                  <p className="text-sm text-gray-600">
-                                    {edu.school || "School"} ·{" "}
-                                    {edu.year || "Year"}
-                                  </p>
-                                </div>
-                              ))}
-                            </div>
-                          </section>
-                        )}
-
-                      {visibleSections.projects &&
-                        cv.projects?.filter(Boolean).length > 0 && (
-                          <section>
-                            <h3 className="text-2xl font-bold mb-3">
-                              Projects
-                            </h3>
-                            <div className="space-y-3">
-                              {cv.projects.map((proj, idx) => (
-                                <div key={idx}>
-                                  <h4 className="font-semibold">
-                                    {proj.name || "Project"}
-                                  </h4>
-                                  <p className="text-sm text-gray-600">
-                                    {proj.description}
-                                  </p>
-                                  <ul className="mt-1 list-disc list-inside text-sm text-gray-700">
-                                    {proj.bullets
-                                      ?.filter(Boolean)
-                                      .map((b, bi) => (
-                                        <li key={bi}>{b}</li>
-                                      ))}
-                                  </ul>
-                                </div>
-                              ))}
-                            </div>
-                          </section>
-                        )}
-
-                      {visibleSections.awards &&
-                        cv.extras?.awards?.filter(Boolean).length > 0 && (
-                          <section>
-                            <h3 className="text-2xl font-bold mb-3">Awards</h3>
-                            <ul className="space-y-1 text-sm text-gray-700">
-                              {cv.extras.awards
-                                .filter(Boolean)
-                                .map((award, idx) => (
-                                  <li key={idx}>• {award}</li>
-                                ))}
-                            </ul>
-                          </section>
-                        )}
-                    </div>
-                  </div>
-                </div>
+                <CVDocument
+                  cv={previewCv}
+                  template={activeTemplate}
+                  profileImage={profileImage}
+                  showProfileImage={showProfileImage}
+                />
               </div>
             </div>
           </div>

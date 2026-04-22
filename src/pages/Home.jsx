@@ -1,186 +1,95 @@
 import { useNavigate } from "react-router-dom";
-import { FaArrowRight, FaCheck, FaDownload, FaRegClock } from "react-icons/fa";
-import { FiZap } from "react-icons/fi";
-import { FaShieldAlt } from "react-icons/fa";
-import { CgInfinity } from "react-icons/cg";
-import { AiOutlineCloudDownload } from "react-icons/ai";
+import { FaArrowRight } from "react-icons/fa";
 import { IoMdCheckmarkCircleOutline } from "react-icons/io";
 import { PiBrainLight } from "react-icons/pi";
+import AppHeader from "../components/AppHeader";
+import CVTemplatePreview from "../components/CVTemplatePreview";
+import { cvTemplates } from "../data/templates";
+
 const Home = () => {
   const navigate = useNavigate();
 
-  const features = [
-    {
-      icon: FiZap,
-      title: "Lightning Fast",
-      desc: "Create a professional CV in minutes, not hours",
-    },
-    {
-      icon: FaShieldAlt,
-      title: "Privacy Protected",
-      desc: "Your data is secure and GDPR compliant always",
-    },
-    {
-      icon: FaDownload,
-      title: "Download Instantly",
-      desc: "Export as PDF or save for later editing",
-    },
-  ];
-
-  const testimonials = [
-    { name: "Sarah Mitchell", role: "Marketing Director" },
-    { name: "James Chen", role: "Software Engineer" },
-    { name: "Emma Rodriguez", role: "Product Manager" },
-    { name: "Alex Thompson", role: "Designer" },
-    { name: "Lisa Anderson", role: "HR Manager" },
-  ];
-
   return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation */}
-      <nav className="border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur-sm z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <img
-            src="https://i.ibb.co/PszMTvCF/a78792e3-1160-48a0-821f-7a1b9e928ed4.png"
-            alt="a78792e3 1160 48a0 821f 7a1b9e928ed4"
-            className="w-[200px]"
-            border="0"
-          />
-        </div>
-      </nav>
+    <div className="page-shell px-4 py-5 md:px-6 md:py-8">
+      <div className="mx-auto max-w-7xl">
+        <AppHeader />
 
-      {/* Hero Section */}
-      <section className="max-w-6xl mx-auto px-5 sm:px-6 lg:px-2 py-[23px] md:py-20">
-        <div className="grid md:grid-cols-2 gap-12 ">
-          {/* Left: Content */}
+        <section className="grid gap-8 px-1 pb-6 pt-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:pt-16">
           <div>
-            <div className="bg-indigo-500 mb-5 rounded-2xl p-3 w-fit">
-              <PiBrainLight className="text-white text-sm-[40px] text-[30px]" />
+            <div className="mb-6 inline-flex items-center gap-3 rounded-full border border-black/10 bg-white/55 px-4 py-3 text-sm font-medium text-[var(--app-muted)]">
+              <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--app-accent)] text-white">
+                <PiBrainLight className="text-[24px]" />
+              </span>
+              AI-powered CV builder
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-              Build a job winning resume for free
-            </h2>
-            <p className="text-md-xl text-sm flex items-center text-gray-600 mb-4">
-              <IoMdCheckmarkCircleOutline className="mx-1  text-green-600" />
-              Your first resume is 100% free forever
+            <h1 className="max-w-3xl text-5xl font-semibold leading-none text-[var(--app-ink)] md:text-7xl">
+              Build a job-winning CV with a template that already looks right.
+            </h1>
+            <p className="mt-6 max-w-2xl text-base leading-8 text-[var(--app-muted)] md:text-lg">
+              Start from a real resume picture, generate the content with AI or
+              fill it in manually, then export a final design that stays close
+              to the template you selected.
             </p>
-            <p className="text-md-xl text-sm flex items-center text-gray-500 mb-4">
-              <IoMdCheckmarkCircleOutline className=" mx-1  text-green-600" />
-              Unlimited downloads. No hidden fees. Yes, really{" "}
-            </p>
-            <p className="text-md-xl text-sm flex items-center text-gray-500 mb-8">
-              <IoMdCheckmarkCircleOutline className="mx-1 text-green-600" />
-              Takes about 5 minutes. No registration needed.
-            </p>
+
+            <div className="mt-8 space-y-3 text-sm text-[var(--app-muted)] md:text-base">
+              {[
+                "Your first resume stays free.",
+                "Unlimited PDF downloads. No watermark.",
+                "Takes about five minutes to get a polished result.",
+                "Create an account to save multiple CV versions.",
+              ].map((item) => (
+                <p key={item} className="flex items-center gap-2">
+                  <IoMdCheckmarkCircleOutline className="text-lg text-[var(--app-warm)]" />
+                  {item}
+                </p>
+              ))}
+            </div>
 
             <button
               onClick={() => navigate("/template-select")}
-              className="bg-indigo-600 text-white py-4 px-8 rounded-lg font-semibold hover:bg-indigo-700 transition-all duration-300 flex items-center gap-2 group text-lg shadow-lg hover:shadow-xl"
+              className="brand-button mt-8 flex items-center gap-2 rounded-2xl px-8 py-4 text-sm font-semibold shadow-[0_18px_36px_rgba(24,54,74,0.22)] transition-all hover:translate-y-[-1px] md:text-base"
             >
               Get started for free
-              <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+              <FaArrowRight />
             </button>
           </div>
 
-          {/* Right: Preview */}
-          <div className="relative">
-            <img
-              src="https://marketplace.canva.com/EAFRuCp3DcY/3/0/1131w/canva-black-white-minimalist-cv-resume-fbJ3nW9XufE.jpg"
-              alt=""
-              className="rounded-3xl w-90 shadow-2xl border border-gray-200"
-            />
-            {/* <div className="bg-gradient-to-br from-indigo-100 to-purple-100 rounded-2xl p-8 shadow-2xl">
-              <div className="bg-white rounded-lg p-6 shadow-lg">
-                <div className="text-xs font-semibold text-indigo-600 mb-2">
-                  RESUME PREVIEW
+          <div className="surface-panel rounded-[36px] p-5 md:p-6">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-4 rounded-[30px] bg-white/45 p-4 sm:col-span-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[var(--app-muted)]">
+                      Resume Gallery
+                    </p>
+                    <h2 className="mt-1 text-4xl font-semibold text-[var(--app-ink)]">
+                      Free Resume Templates
+                    </h2>
+                  </div>
+                  <div className="rounded-full border border-black/10 bg-white/65 px-4 py-2 text-xs font-medium text-[var(--app-muted)]">
+                    Popular styles
+                  </div>
                 </div>
-                <div className="space-y-3">
-                  <div className="h-6 bg-gray-800 w-40 rounded"></div>
-                  <div className="space-y-1">
-                    <div className="h-3 bg-gray-400 w-32 rounded"></div>
-                    <div className="h-3 bg-gray-300 w-24 rounded"></div>
-                  </div>
-                  <div className="pt-4 space-y-2">
-                    <div className="h-3 bg-gray-300 w-full rounded"></div>
-                    <div className="h-3 bg-gray-300 w-5/6 rounded"></div>
-                  </div>
-                  <div className="pt-4 space-y-2">
-                    <div className="h-3 bg-gray-300 w-full rounded"></div>
-                    <div className="h-3 bg-gray-300 w-4/5 rounded"></div>
-                  </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {cvTemplates.slice(0, 6).map((template) => (
+                    <div
+                      key={template.id}
+                      className="overflow-hidden rounded-[24px] border border-black/10 bg-white/70 p-3"
+                    >
+                      <div className="aspect-[0.82] overflow-hidden rounded-[20px]">
+                        <CVTemplatePreview template={template} />
+                      </div>
+                      <p className="mt-3 text-sm font-semibold text-[var(--app-ink)]">
+                        {template.name}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div> */}
+            </div>
           </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      {/* <section className="bg-gray-50 py-16 md:py-24">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h3 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-12">
-            Why choose AI CV Builder?
-          </h3>
-          <div className="grid md:grid-cols-3 gap-8">
-            {features.map((feature, idx) => {
-              const Icon = feature.icon;
-              return (
-                <div
-                  key={idx}
-                  className="bg-white rounded-xl p-8 shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <Icon className="text-indigo-600 text-3xl mb-4" />
-                  <h4 className="text-xl font-semibold text-gray-900 mb-2">
-                    {feature.title}
-                  </h4>
-                  <p className="text-gray-600">{feature.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section> */}
-
-      {/* Social Proof */}
-      {/* <section className="py-16 md:py-24">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h3 className="text-lg font-semibold text-gray-900 mb-8">
-            Trusted by millions of job seekers
-          </h3>
-          <div className="flex justify-center items-center flex-wrap gap-8">
-            {testimonials.map((person, idx) => (
-              <div key={idx} className="text-center">
-                <div className="w-12 h-12 bg-gradient-to-br from-indigo-400 to-purple-400 rounded-full mx-auto mb-3 flex items-center justify-center text-white font-bold">
-                  {person.name.charAt(0)}
-                </div>
-                <p className="font-semibold text-gray-900 text-sm">
-                  {person.name}
-                </p>
-                <p className="text-gray-600 text-xs">{person.role}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section> */}
-
-      {/* CTA Section */}
-      {/* <section className="bg-gradient-to-r from-indigo-600 to-purple-600 py-16 md:py-24">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h3 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Ready to create your perfect CV?
-          </h3>
-          <p className="text-xl text-indigo-100 mb-8">
-            Choose from professional templates and let AI do the heavy lifting.
-          </p>
-          <button
-            onClick={() => navigate("/template-select")}
-            className="bg-white text-indigo-600 py-4 px-8 rounded-lg font-semibold hover:bg-gray-100 transition-all duration-300 flex items-center gap-2 group text-lg inline-flex shadow-lg"
-          >
-            Get started now
-            <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
-          </button>
-        </div>
-      </section> */}
+        </section>
+      </div>
     </div>
   );
 };

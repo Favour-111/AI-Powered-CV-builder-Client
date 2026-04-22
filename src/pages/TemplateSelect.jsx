@@ -1,230 +1,186 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaArrowRight, FaCheck, FaArrowLeft } from "react-icons/fa";
-import {
-  FiLayout,
-  FiColumns,
-  FiGrid,
-  FiZap,
-  FiAward,
-  FiTrendingUp,
-  FiTarget,
-  FiCode,
-  FiFeather,
-  FiBold,
-  FiGlobe,
-  FiBook,
-  FiFileText,
-  FiClock,
-  FiBarChart2,
-} from "react-icons/fi";
-
-const templates = [
-  {
-    id: "classic-professional",
-    name: "Classic Professional",
-    category: "Professional",
-    layout: "Traditional Block",
-    description: "Timeless design with clear sections and formal typography",
-    icon: FiFileText,
-    color: "from-slate-600 to-gray-700",
-    features: ["Formal headers", "Block sections", "Conservative spacing"],
-  },
-  {
-    id: "modern-asymmetric",
-    name: "Modern Asymmetric",
-    category: "Modern",
-    layout: "Asymmetric Layout",
-    description:
-      "Bold header with asymmetric content blocks and modern spacing",
-    icon: FiLayout,
-    color: "from-blue-500 to-indigo-600",
-    features: ["Large header photo", "Asymmetric columns", "Modern typography"],
-  },
-  {
-    id: "minimalist-lines",
-    name: "Minimalist Lines",
-    category: "Modern",
-    layout: "Line Separators",
-    description: "Clean design using subtle lines and ample white space",
-    icon: FiFeather,
-    color: "from-gray-400 to-slate-500",
-    features: ["Thin line separators", "Generous margins", "Minimal icons"],
-  },
-  {
-    id: "creative-mosaic",
-    name: "Creative Mosaic",
-    category: "Creative",
-    layout: "Mosaic Grid",
-    description: "Artistic layout with mosaic-style information blocks",
-    icon: FiGrid,
-    color: "from-purple-500 to-pink-500",
-    features: ["Colorful blocks", "Geometric shapes", "Creative typography"],
-  },
-  {
-    id: "executive-sidebar",
-    name: "Executive Sidebar",
-    category: "Professional",
-    layout: "Executive Sidebar",
-    description: "Wide sidebar for contact info with elegant main content area",
-    icon: FiColumns,
-    color: "from-amber-600 to-orange-600",
-    features: [
-      "Wide contact sidebar",
-      "Elegant fonts",
-      "Achievement highlights",
-    ],
-  },
-  {
-    id: "tech-terminal",
-    name: "Tech Terminal",
-    category: "Technical",
-    layout: "Terminal Style",
-    description:
-      "Code-inspired design mimicking terminal/command line interface",
-    icon: FiCode,
-    color: "from-green-500 to-emerald-600",
-    features: ["Monospace fonts", "Terminal colors", "Code-like formatting"],
-  },
-];
+import { FaArrowRight, FaCheck, FaRegStar } from "react-icons/fa";
+import AppHeader from "../components/AppHeader";
+import CVTemplatePreview from "../components/CVTemplatePreview";
+import { cvTemplates, getTemplateById } from "../data/templates";
+import { getCurrentUser } from "../lib/session";
 
 const TemplateSelect = () => {
   const navigate = useNavigate();
-  const [selectedTemplate, setSelectedTemplate] = useState("modern-clean");
+  const user = getCurrentUser();
+  const [selectedTemplate, setSelectedTemplate] = useState(
+    localStorage.getItem("selectedTemplate") || cvTemplates[0].id,
+  );
   const [filterCategory, setFilterCategory] = useState("All");
 
-  const categories = ["All", "Modern", "Professional", "Creative", "Technical"];
+  const categories = useMemo(
+    () => ["All", ...new Set(cvTemplates.map((template) => template.category))],
+    [],
+  );
+
   const filteredTemplates =
     filterCategory === "All"
-      ? templates
-      : templates.filter((t) => t.category === filterCategory);
+      ? cvTemplates
+      : cvTemplates.filter((template) => template.category === filterCategory);
+
+  const activeTemplate = getTemplateById(selectedTemplate);
 
   const handleContinue = () => {
     localStorage.setItem("selectedTemplate", selectedTemplate);
+    if (!user) {
+      navigate("/auth", {
+        state: {
+          redirectTo: "/mode-select",
+          authMessage:
+            "Login or create an account to continue with this template.",
+        },
+      });
+      return;
+    }
+
     navigate("/mode-select");
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 p-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-12 mt-8">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Choose Your CV Design
-            </h1>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              Select from 15+ professional templates with different layouts.
-              Pick the design that matches your style and industry.
-            </p>
-          </div>
-        </div>
-
-        {/* Category Filter */}
-        <div className="mb-12 flex justify-center flex-wrap gap-3">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setFilterCategory(cat)}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                filterCategory === cat
-                  ? "bg-slate-800 text-white shadow-md"
-                  : "bg-white text-slate-600 border border-slate-300 hover:border-slate-500"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        {/* Templates Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {filteredTemplates.map((template) => {
-            const Icon = template.icon;
-            const isSelected = selectedTemplate === template.id;
-            return (
-              <div
-                key={template.id}
-                onClick={() => setSelectedTemplate(template.id)}
-                className={`relative rounded-2xl p-6 transition-all duration-300 cursor-pointer group ${
-                  isSelected
-                    ? "bg-white shadow-xl border border-indigo-200"
-                    : "bg-white shadow-md border border-gray-200 hover:shadow-lg"
-                }`}
-              >
-                {isSelected && (
-                  <div className="absolute -top-3 -right-3 flex items-center justify-center">
-                    <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg">
-                      <FaCheck className="text-white text-sm" />
-                    </div>
-                  </div>
-                )}
-
-                {/* Preview Gradient */}
-                <div
-                  className={`w-full h-40 bg-gradient-to-br ${template.color} rounded-xl mb-4 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow`}
-                >
-                  <Icon className="text-white text-4xl opacity-80" />
-                </div>
-
-                {/* Template Info */}
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">
-                    {template.name}
-                  </h3>
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex gap-2">
-                      <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded">
-                        {template.category}
-                      </span>
-                      <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                        {template.layout}
-                      </span>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 leading-relaxed mb-3">
-                    {template.description}
-                  </p>
-                  <div className="space-y-1">
-                    {template.features.map((feature, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-2 text-xs text-gray-500"
-                      >
-                        <div className="w-1 h-1 bg-indigo-400 rounded-full"></div>
-                        {feature}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Selected Template Summary */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 mb-12 shadow-sm">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+    <div className="page-shell px-4 py-6 md:px-6 md:py-10">
+      <div className="mx-auto max-w-7xl">
+        <AppHeader />
+        <div className="surface-panel rounded-[32px] px-5 py-8 md:px-10 md:py-10">
+          <div className="grid gap-10 lg:grid-cols-[1.3fr_0.7fr] lg:items-start">
             <div>
-              <p className="text-sm text-gray-600 mb-2">Selected Template</p>
-              <h2 className="text-2xl font-bold text-gray-900">
-                {templates.find((t) => t.id === selectedTemplate)?.name}
-              </h2>
-              <p className="text-gray-600 mt-1">
-                {templates.find((t) => t.id === selectedTemplate)?.description}
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[var(--app-muted)]">
+                <FaRegStar className="text-[var(--app-warm)]" />
+                Free Resume Templates
+              </div>
+              <h1 className="max-w-3xl text-5xl font-semibold leading-none text-[var(--app-ink)] md:text-6xl">
+                Pick the resume picture that matches the final look you want.
+              </h1>
+              <p className="mt-5 max-w-3xl text-base leading-7 text-[var(--app-muted)] md:text-lg">
+                Every thumbnail below is a real layout preview. The template you
+                choose here will drive the final CV design on the result page so
+                the generated resume stays visually close to the card you
+                select.
               </p>
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => setFilterCategory(category)}
+                    className={`rounded-full px-5 py-2.5 text-sm font-medium transition-all ${
+                      filterCategory === category
+                        ? "brand-button shadow-[0_12px_25px_rgba(24,54,74,0.18)]"
+                        : "secondary-button"
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
             </div>
-            <button
-              onClick={handleContinue}
-              className="bg-indigo-600 text-white py-4 px-8 rounded-lg font-semibold hover:bg-indigo-700 transition-all duration-300 flex items-center gap-2 group shadow-lg whitespace-nowrap"
-            >
-              Continue
-              <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
-            </button>
+
+            <div className="rounded-[28px] border border-black/10 bg-white/58 p-5 shadow-[0_18px_45px_rgba(36,31,26,0.08)]">
+              <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[var(--app-muted)]">
+                Selected Template
+              </p>
+              <div className="mt-4 aspect-[0.9] overflow-hidden rounded-[28px]">
+                <CVTemplatePreview template={activeTemplate} />
+              </div>
+              <div className="mt-5 flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-3xl font-semibold text-[var(--app-ink)]">
+                    {activeTemplate.name}
+                  </h2>
+                  <p className="mt-1 text-sm uppercase tracking-[0.25em] text-[var(--app-muted)]">
+                    {activeTemplate.category} · {activeTemplate.tone}
+                  </p>
+                </div>
+                <div
+                  className="h-12 w-12 rounded-2xl border border-black/10"
+                  style={{ backgroundColor: activeTemplate.accent }}
+                />
+              </div>
+              <p className="mt-4 text-sm leading-6 text-[var(--app-muted)]">
+                {activeTemplate.summary}
+              </p>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {activeTemplate.features.map((feature) => (
+                  <span
+                    key={feature}
+                    className="rounded-full border border-black/10 bg-white/70 px-3 py-1.5 text-xs font-medium text-[var(--app-ink)]"
+                  >
+                    {feature}
+                  </span>
+                ))}
+              </div>
+              <button
+                onClick={handleContinue}
+                className="brand-button mt-6 flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-sm font-semibold transition-all hover:translate-y-[-1px]"
+              >
+                Continue with {activeTemplate.name}
+                <FaArrowRight className="transition-transform group-hover:translate-x-1" />
+              </button>
+              {!user && (
+                <p className="mt-3 text-sm leading-6 text-[var(--app-muted)]">
+                  You need to log in or sign up before continuing from template
+                  selection.
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {filteredTemplates.map((template) => {
+              const isSelected = selectedTemplate === template.id;
+
+              return (
+                <button
+                  key={template.id}
+                  type="button"
+                  onClick={() => setSelectedTemplate(template.id)}
+                  className={`relative overflow-hidden rounded-[28px] border p-4 text-left transition-all ${
+                    isSelected
+                      ? "border-[var(--app-accent)] bg-white/80 shadow-[0_28px_60px_rgba(24,54,74,0.18)]"
+                      : "border-black/10 bg-white/55 hover:border-[var(--app-warm)] hover:bg-white/72 hover:shadow-[0_22px_40px_rgba(36,31,26,0.08)]"
+                  }`}
+                >
+                  {isSelected && (
+                    <span className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-[var(--app-accent)] text-white shadow-lg">
+                      <FaCheck className="text-xs" />
+                    </span>
+                  )}
+                  <div className="aspect-[0.82] overflow-hidden rounded-[22px]">
+                    <CVTemplatePreview template={template} />
+                  </div>
+                  <div className="mt-4 flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-3xl font-semibold text-[var(--app-ink)]">
+                        {template.name}
+                      </h3>
+                      <p className="mt-1 text-xs uppercase tracking-[0.28em] text-[var(--app-muted)]">
+                        {template.category}
+                      </p>
+                    </div>
+                    <div
+                      className="mt-1 h-4 w-4 rounded-full border border-black/10"
+                      style={{ backgroundColor: template.accent }}
+                    />
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-[var(--app-muted)]">
+                    {template.summary}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-10 rounded-[28px] border border-black/10 bg-white/45 px-5 py-5 text-sm text-[var(--app-muted)] md:px-6">
+            Choose the thumbnail first. Then complete AI or Manual mode. The
+            final CV renderer uses the same template configuration, so the
+            result page will follow the picture you picked instead of switching
+            to one generic design.
           </div>
         </div>
-
-        {/* Features CallOut */}
       </div>
     </div>
   );

@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { FaSpinner, FaCheck } from "react-icons/fa";
+import { getTemplateById } from "../data/templates";
+import { api, withAuth } from "../lib/api";
+import { getCurrentUser } from "../lib/session";
 
 const Generating = () => {
   const navigate = useNavigate();
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState("Initializing...");
+  const selectedTemplate = getTemplateById(
+    localStorage.getItem("selectedTemplate"),
+  );
+  const user = getCurrentUser();
 
   useEffect(() => {
     const generateCV = async () => {
@@ -29,19 +35,30 @@ const Generating = () => {
         setStatus("Crafting your CV with AI...");
         setProgress(40);
 
-        const payload = { ...formData, user_id: 1 };
+        const payload = { ...formData };
         const formDataObj = new FormData();
         formDataObj.append("cvData", JSON.stringify(payload));
         formDataObj.append("mode", mode);
         formDataObj.append("showProfileImage", formData.showProfileImage);
+        formDataObj.append("selectedTemplate", selectedTemplate);
+        formDataObj.append(
+          "cvLabel",
+          formData.targetRole ||
+            formData.title ||
+            `${formData.fullName || "Untitled"} CV`,
+        );
 
         if (formData.profileImage instanceof File) {
           formDataObj.append("profileImage", formData.profileImage);
         }
 
-        const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/api/cv/generate`, formDataObj, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        const { data } = await api.post(
+          "/api/cv/generate",
+          formDataObj,
+          withAuth({
+            headers: { "Content-Type": "multipart/form-data" },
+          }),
+        );
 
         clearInterval(progressInterval);
         setProgress(100);
@@ -64,37 +81,50 @@ const Generating = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="max-w-md mx-auto text-center">
-        <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-12 border border-white/20">
+    <div className="page-shell flex min-h-screen items-center justify-center p-4">
+      <div className="mx-auto max-w-md text-center">
+        <div className="surface-panel rounded-[34px] p-12">
           <div className="mb-8">
-            <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-black/10 bg-white/50">
               {progress === 100 ? (
-                <FaCheck className="text-purple-500 text-5xl" />
+                <FaCheck className="text-5xl text-[var(--app-warm)]" />
               ) : (
-                <FaSpinner className="text-purple-500 text-5xl animate-spin" />
+                <FaSpinner className="animate-spin text-5xl text-[var(--app-accent)]" />
               )}
             </div>
 
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[var(--app-muted)]">
+              Building Resume
+            </p>
+            <h1 className="mt-3 text-4xl font-semibold text-[var(--app-ink)]">
               {progress === 100 ? "Ready!" : "Generating Your CV"}
             </h1>
 
-            <p className="text-gray-600 mb-6">{status}</p>
+            <p className="mb-2 mt-4 text-sm uppercase tracking-[0.24em] text-[var(--app-muted)]">
+              Template · {selectedTemplate.name}
+            </p>
+            <p className="mb-6 text-[var(--app-muted)]">{status}</p>
+            {user && (
+              <p className="mb-4 text-xs uppercase tracking-[0.2em] text-[var(--app-muted)]">
+                Saving to account automatically
+              </p>
+            )}
 
-            <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
+            <div className="mb-4 h-3 w-full rounded-full bg-black/8">
               <div
-                className="bg-gradient-to-r from-indigo-500 to-purple-500 h-3 rounded-full transition-all duration-500 ease-out"
+                className="h-3 rounded-full bg-[var(--app-accent)] transition-all duration-500 ease-out"
                 style={{ width: `${progress}%` }}
-              ></div>
+              />
             </div>
 
-            <p className="text-sm text-gray-500">{progress}% Complete</p>
+            <p className="text-sm text-[var(--app-muted)]">
+              {progress}% Complete
+            </p>
           </div>
 
           {progress === 100 && (
             <div className="animate-fade-in">
-              <p className="text-indigo-600 font-semibold">
+              <p className="font-semibold text-[var(--app-accent)]">
                 Redirecting to your CV...
               </p>
             </div>

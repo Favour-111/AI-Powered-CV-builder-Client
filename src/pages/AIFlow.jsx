@@ -8,11 +8,17 @@ import {
   FaLinkedin,
   FaBriefcase,
   FaCamera,
-  FaArrowLeft,
+  FaListUl,
 } from "react-icons/fa";
+import { getTemplateById } from "../data/templates";
+import { getCurrentUser } from "../lib/session";
 
 const AIFlow = () => {
   const navigate = useNavigate();
+  const selectedTemplate = getTemplateById(
+    localStorage.getItem("selectedTemplate"),
+  );
+  const user = getCurrentUser();
   const [formData, setFormData] = useState({
     fullName: "",
     title: "",
@@ -20,6 +26,19 @@ const AIFlow = () => {
     phone: "",
     linkedin: "",
     portfolio: "",
+    location: "",
+    targetRole: "",
+    yearsExperience: "",
+    careerLevel: "mid-level",
+    industryFocus: "",
+    preferredTone: "confident",
+    topSkills: "",
+    strongestAchievements: "",
+    workHistoryHighlights: "",
+    projectHighlights: "",
+    educationDetails: "",
+    certifications: "",
+    jobDescription: "",
     additionalInfo: "",
     profileImage: null,
     profileImagePreview: null,
@@ -44,31 +63,49 @@ const AIFlow = () => {
   };
 
   const handleSubmit = () => {
-    // Store in localStorage for next steps
     localStorage.setItem("cvFormData", JSON.stringify(formData));
     localStorage.setItem("mode", "AI");
     navigate("/generating");
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4">
-      <div className="max-w-2xl mx-auto">
-        {/* Back Button */}
-
-        <div className="text-center mb-8">
-          <h1 className="text-3xl mt-10  font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
-            AI CV Builder
-          </h1>
-          <p className="text-sm text-gray-600">
-            Fill in your basic information and let AI create your perfect CV
-          </p>
+    <div className="page-shell px-4 py-6 md:px-6 md:py-10">
+      <div className="mx-auto max-w-3xl">
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[var(--app-muted)]">
+              AI Builder
+            </p>
+            <h1 className="mt-2 text-5xl font-semibold leading-none text-[var(--app-ink)] md:text-6xl">
+              Give the basics. Let AI draft the rest.
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--app-muted)]">
+              Your content will be generated into the {selectedTemplate.name}{" "}
+              template you already selected.
+            </p>
+          </div>
+          <div className="rounded-full border border-black/10 bg-white/55 px-4 py-3 text-sm text-[var(--app-muted)]">
+            Template:{" "}
+            <span className="font-semibold text-[var(--app-ink)]">
+              {selectedTemplate.name}
+            </span>
+          </div>
         </div>
 
-        <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-sm-8 p-5 shadow-xl border border-white/20">
+        {user && (
+          <div className="mb-6 rounded-[24px] border border-[var(--app-accent)]/10 bg-white/55 px-5 py-4 text-sm text-[var(--app-muted)]">
+            Logged in as{" "}
+            <span className="font-semibold text-[var(--app-ink)]">
+              {user.email}
+            </span>
+            . This CV will be saved to your account automatically.
+          </div>
+        )}
+
+        <div className="surface-panel rounded-[32px] p-5 md:p-8">
           <div className="space-y-6">
-            {/* Profile Image */}
             <div className="text-center">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-2 block text-sm font-medium text-[var(--app-muted)]">
                 Profile Photo (Optional)
               </label>
               <div className="flex flex-col items-center gap-4">
@@ -81,19 +118,19 @@ const AIFlow = () => {
                 />
                 <label
                   htmlFor="profileImage"
-                  className="w-24 h-24 bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center cursor-pointer hover:from-gray-200 hover:to-gray-300 transition-all duration-300"
+                  className="flex h-24 w-24 cursor-pointer items-center justify-center rounded-[24px] border border-black/10 bg-white/70 transition-all hover:bg-white"
                 >
                   {formData.profileImagePreview ? (
                     <img
                       src={formData.profileImagePreview}
                       alt="Profile"
-                      className="w-full h-full object-cover rounded-2xl"
+                      className="h-full w-full rounded-[24px] object-cover"
                     />
                   ) : (
-                    <FaCamera className="text-gray-500 text-2xl" />
+                    <FaCamera className="text-2xl text-[var(--app-muted)]" />
                   )}
                 </label>
-                <label className="flex items-center gap-2 text-sm text-gray-600">
+                <label className="flex items-center gap-2 text-sm text-[var(--app-muted)]">
                   <input
                     type="checkbox"
                     checked={formData.showProfileImage}
@@ -109,30 +146,29 @@ const AIFlow = () => {
               </div>
             </div>
 
-            {/* Basic Info */}
             <div className="grid md:grid-cols-2 gap-4">
               <div className="relative">
-                <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--app-muted)]" />
                 <input
                   type="text"
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleChange}
                   placeholder="Full Name"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
+                  className="w-full rounded-2xl border border-black/10 bg-white/65 py-3 pl-11 pr-4 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                   required
                 />
               </div>
 
               <div className="relative">
-                <FaBriefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <FaBriefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--app-muted)]" />
                 <input
                   type="text"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
                   placeholder="Job Title"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
+                  className="w-full rounded-2xl border border-black/10 bg-white/65 py-3 pl-11 pr-4 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                   required
                 />
               </div>
@@ -140,27 +176,27 @@ const AIFlow = () => {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div className="relative">
-                <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--app-muted)]" />
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Email Address"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
+                  className="w-full rounded-2xl border border-black/10 bg-white/65 py-3 pl-11 pr-4 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                   required
                 />
               </div>
 
               <div className="relative">
-                <FaPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <FaPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--app-muted)]" />
                 <input
                   type="tel"
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="Phone Number"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
+                  className="w-full rounded-2xl border border-black/10 bg-white/65 py-3 pl-11 pr-4 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                   required
                 />
               </div>
@@ -168,14 +204,14 @@ const AIFlow = () => {
 
             <div className="grid md:grid-cols-2 gap-4">
               <div className="relative">
-                <FaLinkedin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <FaLinkedin className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--app-muted)]" />
                 <input
                   type="url"
                   name="linkedin"
                   value={formData.linkedin}
                   onChange={handleChange}
                   placeholder="LinkedIn Profile"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
+                  className="w-full rounded-2xl border border-black/10 bg-white/65 py-3 pl-11 pr-4 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                 />
               </div>
 
@@ -185,13 +221,152 @@ const AIFlow = () => {
                 value={formData.portfolio}
                 onChange={handleChange}
                 placeholder="Portfolio Website"
-                className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
+                className="w-full rounded-2xl border border-black/10 bg-white/65 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
               />
             </div>
 
-            {/* Additional Info */}
+            <div className="grid gap-4 md:grid-cols-3">
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="Location"
+                className="w-full rounded-2xl border border-black/10 bg-white/65 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
+              />
+              <input
+                type="text"
+                name="targetRole"
+                value={formData.targetRole}
+                onChange={handleChange}
+                placeholder="Target Role"
+                className="w-full rounded-2xl border border-black/10 bg-white/65 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
+              />
+              <input
+                type="text"
+                name="yearsExperience"
+                value={formData.yearsExperience}
+                onChange={handleChange}
+                placeholder="Years of Experience"
+                className="w-full rounded-2xl border border-black/10 bg-white/65 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
+              />
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <select
+                name="careerLevel"
+                value={formData.careerLevel}
+                onChange={handleChange}
+                className="w-full rounded-2xl border border-black/10 bg-white/65 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
+              >
+                <option value="student">Student / Entry level</option>
+                <option value="junior">Junior</option>
+                <option value="mid-level">Mid-level</option>
+                <option value="senior">Senior</option>
+                <option value="executive">Executive</option>
+              </select>
+              <select
+                name="preferredTone"
+                value={formData.preferredTone}
+                onChange={handleChange}
+                className="w-full rounded-2xl border border-black/10 bg-white/65 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
+              >
+                <option value="confident">Confident</option>
+                <option value="formal">Formal</option>
+                <option value="results-driven">Results-driven</option>
+                <option value="creative">Creative</option>
+              </select>
+            </div>
+
+            <div className="rounded-[28px] border border-black/10 bg-white/45 p-5">
+              <div className="mb-4 flex items-center gap-3">
+                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--app-accent)] text-white">
+                  <FaListUl />
+                </span>
+                <div>
+                  <h2 className="text-3xl font-semibold text-[var(--app-ink)]">
+                    Give AI richer material
+                  </h2>
+                  <p className="text-sm text-[var(--app-muted)]">
+                    The more detail you provide here, the stronger the generated
+                    CV will be.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <textarea
+                  name="industryFocus"
+                  value={formData.industryFocus}
+                  onChange={handleChange}
+                  placeholder="Industry focus, domain knowledge, or type of companies you are targeting"
+                  rows={4}
+                  className="w-full resize-none rounded-2xl border border-black/10 bg-white/70 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
+                />
+                <textarea
+                  name="topSkills"
+                  value={formData.topSkills}
+                  onChange={handleChange}
+                  placeholder="Top skills, tools, stacks, or keywords separated by commas"
+                  rows={4}
+                  className="w-full resize-none rounded-2xl border border-black/10 bg-white/70 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
+                />
+                <textarea
+                  name="strongestAchievements"
+                  value={formData.strongestAchievements}
+                  onChange={handleChange}
+                  placeholder="Key achievements with numbers, impact, promotions, awards, or major wins"
+                  rows={5}
+                  className="w-full resize-none rounded-2xl border border-black/10 bg-white/70 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
+                />
+                <textarea
+                  name="workHistoryHighlights"
+                  value={formData.workHistoryHighlights}
+                  onChange={handleChange}
+                  placeholder="Past roles, responsibilities, leadership, clients, or business outcomes"
+                  rows={5}
+                  className="w-full resize-none rounded-2xl border border-black/10 bg-white/70 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
+                />
+                <textarea
+                  name="projectHighlights"
+                  value={formData.projectHighlights}
+                  onChange={handleChange}
+                  placeholder="Important projects, launches, case studies, technical builds, or portfolios"
+                  rows={5}
+                  className="w-full resize-none rounded-2xl border border-black/10 bg-white/70 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
+                />
+                <textarea
+                  name="educationDetails"
+                  value={formData.educationDetails}
+                  onChange={handleChange}
+                  placeholder="Degrees, courses, certificates, training, and relevant education details"
+                  rows={5}
+                  className="w-full resize-none rounded-2xl border border-black/10 bg-white/70 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <textarea
+                name="certifications"
+                value={formData.certifications}
+                onChange={handleChange}
+                placeholder="Certifications, licenses, languages, volunteer work, or extras"
+                rows={4}
+                className="w-full resize-none rounded-2xl border border-black/10 bg-white/65 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
+              />
+              <textarea
+                name="jobDescription"
+                value={formData.jobDescription}
+                onChange={handleChange}
+                placeholder="Paste a job description or target keywords so AI can tailor the CV"
+                rows={4}
+                className="w-full resize-none rounded-2xl border border-black/10 bg-white/65 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
+              />
+            </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="mb-2 block text-sm font-medium text-[var(--app-muted)]">
                 Additional Information
               </label>
               <textarea
@@ -200,7 +375,7 @@ const AIFlow = () => {
                 onChange={handleChange}
                 placeholder="Tell us about your experience, skills, education, projects, or anything else you'd like to include in your CV..."
                 rows={6}
-                className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300 resize-none"
+                className="w-full resize-none rounded-2xl border border-black/10 bg-white/65 px-4 py-3 transition-all focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
               />
             </div>
 
@@ -212,10 +387,10 @@ const AIFlow = () => {
                 !formData.email ||
                 !formData.phone
               }
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 px-6 rounded-2xl font-semibold hover:from-indigo-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2 group"
+              className="brand-button flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 font-semibold transition-all disabled:cursor-not-allowed disabled:bg-[#9f9488]"
             >
               Generate My CV
-              <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+              <FaArrowRight />
             </button>
           </div>
         </div>

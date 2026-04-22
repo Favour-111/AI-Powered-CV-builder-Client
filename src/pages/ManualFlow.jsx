@@ -8,11 +8,15 @@ import {
   FaTools,
   FaProjectDiagram,
   FaCamera,
-  FaArrowLeft,
 } from "react-icons/fa";
+import AppHeader from "../components/AppHeader";
+import { getTemplateById } from "../data/templates";
 
 const ManualFlow = () => {
   const navigate = useNavigate();
+  const selectedTemplate = getTemplateById(
+    localStorage.getItem("selectedTemplate"),
+  );
   const [cv, setCv] = useState({
     fullName: "",
     title: "",
@@ -94,24 +98,36 @@ const ManualFlow = () => {
   const [activeSection, setActiveSection] = useState("personal");
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 p-4">
+    <div className="page-shell px-4 py-6 md:px-6 md:py-10">
       <div className="max-w-6xl mx-auto">
-        {/* Back Button */}
-
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent mt-6 mb-4">
-            Manual CV Builder
-          </h1>
-          <p className="text-gray-600">
-            Build your CV step by step with full control
-          </p>
+        <AppHeader />
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-[var(--app-muted)]">
+              Manual Builder
+            </p>
+            <h1 className="mt-2 text-5xl font-semibold leading-none text-[var(--app-ink)] md:text-6xl">
+              Manual CV Builder
+            </h1>
+            <p className="mt-4 text-base leading-7 text-[var(--app-muted)]">
+              Build your CV section by section with full control inside the{" "}
+              {selectedTemplate.name} layout.
+            </p>
+          </div>
+          <div className="rounded-full border border-black/10 bg-white/55 px-4 py-3 text-sm text-[var(--app-muted)]">
+            Template:{" "}
+            <span className="font-semibold text-[var(--app-ink)]">
+              {selectedTemplate.name}
+            </span>
+          </div>
         </div>
 
         <div className="flex flex-col-reverse lg:grid lg:grid-cols-4 gap-6">
-          {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/20 sticky top-4">
-              <h3 className="text-lg font-bold text-gray-800 mb-4">Sections</h3>
+            <div className="surface-panel sticky top-4 rounded-[30px] p-6">
+              <h3 className="mb-4 text-3xl font-semibold text-[var(--app-ink)]">
+                Sections
+              </h3>
               <ul className="space-y-2">
                 {sections.map((item) => {
                   const Icon = item.icon;
@@ -121,8 +137,8 @@ const ManualFlow = () => {
                         onClick={() => setActiveSection(item.key)}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all duration-300 ${
                           activeSection === item.key
-                            ? "bg-emerald-100 text-emerald-700 shadow-md"
-                            : "text-gray-600 hover:bg-gray-50"
+                            ? "bg-[var(--app-accent)] text-white shadow-md"
+                            : "text-[var(--app-muted)] hover:bg-white/50"
                         }`}
                       >
                         <Icon className="text-lg" />
@@ -134,25 +150,24 @@ const ManualFlow = () => {
               </ul>
               <button
                 onClick={handleSubmit}
-                className="w-full mt-6 bg-gradient-to-r from-emerald-600 to-teal-600 text-white py-3 px-4 rounded-2xl font-semibold hover:from-emerald-700 hover:to-teal-700 transition-all duration-300 flex items-center justify-center gap-2 group"
+                className="brand-button mt-6 flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 font-semibold transition-all"
               >
                 Generate My CV
-                <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+                <FaArrowRight />
               </button>
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="lg:col-span-3">
-            <div className="bg-white/70 backdrop-blur-sm rounded-3xl p-sm-8 p-5 shadow-xl border border-white/20">
+            <div className="surface-panel rounded-[30px] p-sm-8 p-5">
               {activeSection === "personal" && (
                 <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-gray-800">
+                  <h2 className="text-3xl font-semibold text-[var(--app-ink)]">
                     Personal Information
                   </h2>
 
                   <div className="text-center">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-[var(--app-muted)] mb-2">
                       Profile Photo (Optional)
                     </label>
                     <div className="flex flex-col items-center gap-4">
@@ -165,7 +180,7 @@ const ManualFlow = () => {
                       />
                       <label
                         htmlFor="profileImage"
-                        className="w-24 h-24 bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center cursor-pointer hover:from-gray-200 hover:to-gray-300 transition-all duration-300"
+                        className="flex h-24 w-24 cursor-pointer items-center justify-center rounded-2xl border border-black/10 bg-white/70 transition-all hover:bg-white"
                       >
                         {cv.profileImagePreview ? (
                           <img
@@ -177,7 +192,7 @@ const ManualFlow = () => {
                           <FaCamera className="text-gray-500 text-2xl" />
                         )}
                       </label>
-                      <label className="flex items-center gap-2 text-sm text-gray-600">
+                      <label className="flex items-center gap-2 text-sm text-[var(--app-muted)]">
                         <input
                           type="checkbox"
                           checked={cv.showProfileImage}
@@ -199,14 +214,14 @@ const ManualFlow = () => {
                       value={cv.fullName}
                       onChange={(e) => handleField("fullName", e.target.value)}
                       placeholder="Full Name"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
+                      className="w-full rounded-2xl border border-black/10 bg-white/65 px-4 py-3 transition-all duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                     />
                     <input
                       type="text"
                       value={cv.title}
                       onChange={(e) => handleField("title", e.target.value)}
                       placeholder="Job Title"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
+                      className="w-full rounded-2xl border border-black/10 bg-white/65 px-4 py-3 transition-all duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                     />
                   </div>
 
@@ -221,7 +236,7 @@ const ManualFlow = () => {
                         }))
                       }
                       placeholder="Email"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
+                      className="w-full rounded-2xl border border-black/10 bg-white/65 px-4 py-3 transition-all duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                     />
                     <input
                       type="tel"
@@ -233,7 +248,7 @@ const ManualFlow = () => {
                         }))
                       }
                       placeholder="Phone"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
+                      className="w-full rounded-2xl border border-black/10 bg-white/65 px-4 py-3 transition-all duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                     />
                   </div>
 
@@ -245,7 +260,7 @@ const ManualFlow = () => {
                         handleContactChange("linkedin", e.target.value)
                       }
                       placeholder="LinkedIn"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
+                      className="w-full rounded-2xl border border-black/10 bg-white/65 px-4 py-3 transition-all duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                     />
                     <input
                       type="text"
@@ -254,7 +269,7 @@ const ManualFlow = () => {
                         handleContactChange("portfolio", e.target.value)
                       }
                       placeholder="Portfolio"
-                      className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300"
+                      className="w-full rounded-2xl border border-black/10 bg-white/65 px-4 py-3 transition-all duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                     />
                   </div>
 
@@ -263,14 +278,14 @@ const ManualFlow = () => {
                     onChange={(e) => handleField("summary", e.target.value)}
                     placeholder="Professional Summary"
                     rows={4}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 resize-none"
+                    className="w-full resize-none rounded-2xl border border-black/10 bg-white/65 px-4 py-3 transition-all duration-300 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                   />
                 </div>
               )}
 
               {activeSection === "experience" && (
                 <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-gray-800">
+                  <h2 className="text-3xl font-semibold text-[var(--app-ink)]">
                     Experience
                   </h2>
                   {cv.experience.map((item, idx) => (
@@ -290,7 +305,7 @@ const ManualFlow = () => {
                             setCv((prev) => ({ ...prev, experience: updated }));
                           }}
                           placeholder="Company"
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                          className="w-full rounded-xl border border-black/10 bg-white/65 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                         />
                         <input
                           value={item.role}
@@ -303,7 +318,7 @@ const ManualFlow = () => {
                             setCv((prev) => ({ ...prev, experience: updated }));
                           }}
                           placeholder="Role"
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                          className="w-full rounded-xl border border-black/10 bg-white/65 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                         />
                       </div>
                       <input
@@ -317,7 +332,7 @@ const ManualFlow = () => {
                           setCv((prev) => ({ ...prev, experience: updated }));
                         }}
                         placeholder="Duration"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                        className="w-full rounded-xl border border-black/10 bg-white/65 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                       />
                       <div className="space-y-2">
                         <p className="text-sm font-medium">Achievements</p>
@@ -334,7 +349,7 @@ const ManualFlow = () => {
                                 }));
                               }}
                               placeholder="Achievement"
-                              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                              className="w-full rounded-xl border border-black/10 bg-white/65 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                             />
                             <button
                               onClick={() => {
@@ -359,7 +374,7 @@ const ManualFlow = () => {
                             updated[idx].bullets.push("");
                             setCv((prev) => ({ ...prev, experience: updated }));
                           }}
-                          className="text-emerald-600 hover:text-emerald-700 text-sm"
+                          className="text-sm text-[var(--app-accent)] hover:text-[#102636]"
                         >
                           + Add achievement
                         </button>
@@ -394,7 +409,7 @@ const ManualFlow = () => {
                         ],
                       }))
                     }
-                    className="w-full py-3 border-2 border-dashed border-emerald-300 text-emerald-600 rounded-2xl hover:bg-emerald-50 transition-all duration-300"
+                    className="w-full rounded-2xl border-2 border-dashed border-[rgba(24,54,74,0.22)] py-3 text-[var(--app-accent)] transition-all duration-300 hover:bg-white/50"
                   >
                     + Add Experience
                   </button>
@@ -403,7 +418,7 @@ const ManualFlow = () => {
 
               {activeSection === "education" && (
                 <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-gray-800">
+                  <h2 className="text-3xl font-semibold text-[var(--app-ink)]">
                     Education
                   </h2>
                   {cv.education.map((item, idx) => (
@@ -423,7 +438,7 @@ const ManualFlow = () => {
                             setCv((prev) => ({ ...prev, education: updated }));
                           }}
                           placeholder="School"
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                          className="w-full rounded-xl border border-black/10 bg-white/65 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                         />
                         <input
                           value={item.degree}
@@ -436,7 +451,7 @@ const ManualFlow = () => {
                             setCv((prev) => ({ ...prev, education: updated }));
                           }}
                           placeholder="Degree"
-                          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                          className="w-full rounded-xl border border-black/10 bg-white/65 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                         />
                       </div>
                       <input
@@ -450,7 +465,7 @@ const ManualFlow = () => {
                           setCv((prev) => ({ ...prev, education: updated }));
                         }}
                         placeholder="Year"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                        className="w-full rounded-xl border border-black/10 bg-white/65 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                       />
                       <button
                         onClick={() =>
@@ -477,7 +492,7 @@ const ManualFlow = () => {
                         ],
                       }))
                     }
-                    className="w-full py-3 border-2 border-dashed border-emerald-300 text-emerald-600 rounded-2xl hover:bg-emerald-50 transition-all duration-300"
+                    className="w-full rounded-2xl border-2 border-dashed border-[rgba(24,54,74,0.22)] py-3 text-[var(--app-accent)] transition-all duration-300 hover:bg-white/50"
                   >
                     + Add Education
                   </button>
@@ -486,7 +501,9 @@ const ManualFlow = () => {
 
               {activeSection === "skills" && (
                 <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-gray-800">Skills</h2>
+                  <h2 className="text-3xl font-semibold text-[var(--app-ink)]">
+                    Skills
+                  </h2>
                   {["technical", "tools", "soft"].map((cat) => (
                     <div key={cat} className="space-y-3">
                       <h3 className="text-lg font-semibold capitalize">
@@ -505,7 +522,7 @@ const ManualFlow = () => {
                               setCv((prev) => ({ ...prev, skills: updated }));
                             }}
                             placeholder={`Add ${cat} skill`}
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                            className="w-full rounded-xl border border-black/10 bg-white/65 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                           />
                           <button
                             onClick={() => {
@@ -531,7 +548,7 @@ const ManualFlow = () => {
                           };
                           setCv((prev) => ({ ...prev, skills: updated }));
                         }}
-                        className="text-emerald-600 hover:text-emerald-700 text-sm"
+                        className="text-sm text-[var(--app-accent)] hover:text-[#102636]"
                       >
                         + Add {cat} skill
                       </button>
@@ -542,7 +559,9 @@ const ManualFlow = () => {
 
               {activeSection === "projects" && (
                 <div className="space-y-6">
-                  <h2 className="text-2xl font-bold text-gray-800">Projects</h2>
+                  <h2 className="text-3xl font-semibold text-[var(--app-ink)]">
+                    Projects
+                  </h2>
                   {cv.projects.map((proj, idx) => (
                     <div
                       key={idx}
@@ -559,7 +578,7 @@ const ManualFlow = () => {
                           setCv((prev) => ({ ...prev, projects: updated }));
                         }}
                         placeholder="Project Name"
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                        className="w-full rounded-xl border border-black/10 bg-white/65 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                       />
                       <textarea
                         value={proj.description}
@@ -573,7 +592,7 @@ const ManualFlow = () => {
                         }}
                         placeholder="Project Description"
                         rows={3}
-                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
+                        className="w-full resize-none rounded-xl border border-black/10 bg-white/65 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                       />
                       <div className="space-y-2">
                         <p className="text-sm font-medium">Key Points</p>
@@ -590,7 +609,7 @@ const ManualFlow = () => {
                                 }));
                               }}
                               placeholder="Key point"
-                              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                              className="w-full rounded-xl border border-black/10 bg-white/65 px-4 py-2 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--app-accent)]"
                             />
                             <button
                               onClick={() => {
@@ -615,7 +634,7 @@ const ManualFlow = () => {
                             updated[idx].bullets.push("");
                             setCv((prev) => ({ ...prev, projects: updated }));
                           }}
-                          className="text-emerald-600 hover:text-emerald-700 text-sm"
+                          className="text-sm text-[var(--app-accent)] hover:text-[#102636]"
                         >
                           + Add key point
                         </button>
@@ -643,7 +662,7 @@ const ManualFlow = () => {
                         ],
                       }))
                     }
-                    className="w-full py-3 border-2 border-dashed border-emerald-300 text-emerald-600 rounded-2xl hover:bg-emerald-50 transition-all duration-300"
+                    className="w-full rounded-2xl border-2 border-dashed border-[rgba(24,54,74,0.22)] py-3 text-[var(--app-accent)] transition-all duration-300 hover:bg-white/50"
                   >
                     + Add Project
                   </button>

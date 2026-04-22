@@ -1,11 +1,93 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --app-bg: #ebe3d7;
+  --app-surface: #f7f1e8;
+  --app-surface-strong: #fffaf3;
+  --app-border: rgba(36, 31, 26, 0.12);
+  --app-ink: #241f1a;
+  --app-muted: #756759;
+  --app-accent: #18364a;
+  --app-accent-soft: rgba(24, 54, 74, 0.1);
+  --app-warm: #9b5c2e;
+}
+
+html {
+  background: var(--app-bg);
+}
+
 body {
   min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(255, 255, 255, 0.65),
+      transparent 34%
+    ),
+    linear-gradient(180deg, #f3ece3 0%, #ebe3d7 100%);
+  color: var(--app-ink);
+  font-family: "Manrope", sans-serif;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+.font-serif {
+  font-family: "Cormorant Garamond", serif;
+}
+
+.page-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at 10% 10%,
+      rgba(255, 255, 255, 0.78),
+      transparent 24%
+    ),
+    radial-gradient(circle at 85% 15%, rgba(24, 54, 74, 0.06), transparent 18%),
+    linear-gradient(180deg, #f4ede3 0%, #ebe3d7 100%);
+}
+
+.surface-panel {
+  background: rgba(255, 250, 243, 0.82);
+  border: 1px solid var(--app-border);
+  box-shadow: 0 24px 70px rgba(36, 31, 26, 0.08);
+  backdrop-filter: blur(14px);
+}
+
+.brand-button {
+  background: var(--app-accent);
+  color: #fffaf3;
+}
+
+.brand-button:hover {
+  background: #102636;
+}
+
+.secondary-button {
+  background: rgba(255, 250, 243, 0.72);
+  color: var(--app-ink);
+  border: 1px solid var(--app-border);
+}
+
+.secondary-button:hover {
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.resume-thumbnail {
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.54),
+    rgba(255, 255, 255, 0)
+  );
 }
 
 @keyframes fade-in {
